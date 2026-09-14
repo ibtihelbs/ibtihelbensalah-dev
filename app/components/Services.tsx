@@ -4,19 +4,15 @@ import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useTheme } from "next-themes";
 import { getServices, type Service, urlFor } from "../sanity.io";
+import { useMounted } from "../hook/useMounted";
 
 export default function Services() {
   const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
   const [services, setServices] = useState<Service[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [mounted, setMounted] = useState(false);
+  const mounted = useMounted();
   const { resolvedTheme } = useTheme();
-
-  // Avoid hydration mismatch for theme-dependent icons
-  useEffect(() => {
-    setMounted(true);
-  }, []);
 
   useEffect(() => {
     async function loadServices() {
@@ -34,13 +30,11 @@ export default function Services() {
         setLoading(false);
       }
     }
-
     loadServices();
   }, []);
 
   const isDark = resolvedTheme === "dark";
 
-  // Pick the right icon based on theme (falls back to the other if missing)
   const getIcon = (service: Service) => {
     if (!mounted) return service.iconDark ?? service.iconLight;
     return isDark
@@ -73,7 +67,6 @@ export default function Services() {
     <ul className="services-list">
       {services.map((service, index) => {
         const icon = getIcon(service);
-
         return (
           <li
             key={service._id}
@@ -84,7 +77,6 @@ export default function Services() {
             onMouseLeave={() => setHoveredIndex(null)}
           >
             <div className="service-content">
-              {/* Icon Container */}
               <div className="service-icon">
                 {icon && (
                   <Image
@@ -96,8 +88,6 @@ export default function Services() {
                   />
                 )}
               </div>
-
-              {/* Text Content */}
               <div className="service-text">
                 {hoveredIndex === index ? (
                   <div className="service-description">

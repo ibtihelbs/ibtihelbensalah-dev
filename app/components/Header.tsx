@@ -1,27 +1,21 @@
-// components/Header.tsx
 "use client";
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
+import Image from "next/image";
 import { getHeaderData, urlFor } from "../sanity.io";
 import type { HeaderData, NavigationItem } from "../sanity.io";
-import Image from "next/image";
+import { useMounted } from "../hook/useMounted";
 
 export default function Header() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [headerData, setHeaderData] = useState<HeaderData | null>(null);
-  const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
+  const mounted = useMounted();
 
-  // Prevent hydration mismatch for theme-dependent UI
-  useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  // Fetch header data from Sanity
   useEffect(() => {
     const fetchHeaderData = async () => {
       try {
@@ -31,14 +25,8 @@ export default function Header() {
         console.error("Error fetching header data:", error);
       }
     };
-
     fetchHeaderData();
   }, []);
-
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMenuOpen(false);
-  }, [pathname]);
 
   const isDark = resolvedTheme === "dark";
 
@@ -51,9 +39,7 @@ export default function Header() {
     setMenuOpen(false);
   };
 
-  const isActivePath = (path: string): boolean => {
-    return pathname === path;
-  };
+  const isActivePath = (path: string): boolean => pathname === path;
 
   const renderNavigationItem = (
     item: NavigationItem,
@@ -63,11 +49,11 @@ export default function Header() {
       <>
         {item.icon && (
           <Image
+            width={30}
+            height={30}
             src={getIconUrl(item.icon)}
             alt={item.icon.alt || `${item.label} icon`}
             className="nav-icon"
-            height={20}
-            width={20}
           />
         )}
         <span>{item.label}</span>
@@ -77,7 +63,6 @@ export default function Header() {
     switch (item.type) {
       case "page": {
         const href = item.isExternal ? item.externalUrl : item.pageRoute;
-
         if (item.isExternal) {
           return (
             <li key={index}>
@@ -93,7 +78,6 @@ export default function Header() {
             </li>
           );
         }
-
         return (
           <li key={index}>
             <Link
@@ -137,21 +121,20 @@ export default function Header() {
               </a>
             </li>
           );
-        } else {
-          return (
-            <li key={index}>
-              <Link
-                href={`/#${item.sectionId}`}
-                onClick={handleNavClick}
-                className={`nav-link-with-icon ${
-                  isActivePath("/") ? "active" : ""
-                }`}
-              >
-                {linkContent}
-              </Link>
-            </li>
-          );
         }
+        return (
+          <li key={index}>
+            <Link
+              href={`/#${item.sectionId}`}
+              onClick={handleNavClick}
+              className={`nav-link-with-icon ${
+                isActivePath("/") ? "active" : ""
+              }`}
+            >
+              {linkContent}
+            </Link>
+          </li>
+        );
 
       default:
         return null;
@@ -164,23 +147,20 @@ export default function Header() {
 
   const { name, logo, navigationItems, themeToggle, icons } = headerData;
 
-  // Sort navigation items by order
   const sortedNavItems =
     navigationItems
       ?.filter((item) => item.isActive)
       .sort((a, b) => (a.order || 0) - (b.order || 0)) || [];
 
-  // Get menu icon based on theme + open state
   const getMenuIcon = () => {
     if (menuOpen) {
       return isDark
         ? icons?.mobileMenuCloseIconDark || icons?.mobileMenuCloseIcon
         : icons?.mobileMenuCloseIcon || icons?.mobileMenuCloseIconDark;
-    } else {
-      return isDark
-        ? icons?.mobileMenuIconDark || icons?.mobileMenuIcon
-        : icons?.mobileMenuIcon || icons?.mobileMenuIconDark;
     }
+    return isDark
+      ? icons?.mobileMenuIconDark || icons?.mobileMenuIcon
+      : icons?.mobileMenuIcon || icons?.mobileMenuIconDark;
   };
 
   const getMenuIconAlt = (): string => {
@@ -192,18 +172,16 @@ export default function Header() {
         : icons?.mobileMenuCloseIcon?.alt ||
             icons?.mobileMenuCloseIconDark?.alt ||
             "Close menu";
-    } else {
-      return isDark
-        ? icons?.mobileMenuIconDark?.alt ||
-            icons?.mobileMenuIcon?.alt ||
-            "Open menu"
-        : icons?.mobileMenuIcon?.alt ||
-            icons?.mobileMenuIconDark?.alt ||
-            "Open menu";
     }
+    return isDark
+      ? icons?.mobileMenuIconDark?.alt ||
+          icons?.mobileMenuIcon?.alt ||
+          "Open menu"
+      : icons?.mobileMenuIcon?.alt ||
+          icons?.mobileMenuIconDark?.alt ||
+          "Open menu";
   };
 
-  // Get theme icon based on current theme
   const themeIcon = isDark
     ? icons?.themeIcons?.lightThemeIcon
     : icons?.themeIcons?.darkThemeIcon;
@@ -221,8 +199,8 @@ export default function Header() {
               src={getIconUrl(logo)}
               alt={logo.alt || name}
               className="logo-image"
-              height={24}
-              width={24}
+              width={30}
+              height={30}
             />
           ) : (
             name
@@ -240,8 +218,8 @@ export default function Header() {
           <Image
             src={getIconUrl(getMenuIcon())}
             alt={getMenuIconAlt()}
-            width={24}
-            height={24}
+            height={30}
+            width={30}
           />
         </button>
 
@@ -260,8 +238,8 @@ export default function Header() {
             <Image
               src={getIconUrl(themeIcon)}
               alt={themeIconAlt}
-              height={24}
-              width={24}
+              height={30}
+              width={30}
             />
           </button>
         )}

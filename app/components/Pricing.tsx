@@ -1,4 +1,5 @@
 "use client";
+
 import { useState, useEffect } from "react";
 import { getPricingPlans, type PricingPlan } from "../sanity.io";
 
@@ -43,9 +44,9 @@ export default function Pricing() {
       <h2 className="text-center">pricing</h2>
       <p className="text-center">
         Special Offer – Limited until the 1st of each month! 🎉 Book your
-        website project before the 1st and enjoy -20% off on any pack. Don't
-        miss the chance to launch your modern, responsive site at the best
-        price!
+        website project before the 1st and enjoy -20% off on any pack.
+        Don&apos;t miss the chance to launch your modern, responsive site at the
+        best price!
       </p>
 
       {/* Mobile pricing selector */}
@@ -90,17 +91,16 @@ export default function Pricing() {
             {/* Features list */}
             <ul>
               {plan.features.map((feature, i) => (
-                <li key={Math.random()}>
+                <li key={`${plan._id}-${i}`}>
                   {feature} {i < plan.features.length - 1 && <hr />}
                 </li>
               ))}
             </ul>
 
             {/* CTA Button */}
-
             <a
               className="pill get-started"
-              href="mailto:&#105;&#98;&#116;&#105;&#104;&#101;&#108;&#46;&#98;&#101;&#110;&#115;&#97;&#108;&#97;&#104;&#64;&#111;&#117;&#116;&#108;&#111;&#111;&#107;&#46;&#102;&#114;"
+              href="mailto:ibtihel.bensalah@outlook.fr"
             >
               Get Started
             </a>

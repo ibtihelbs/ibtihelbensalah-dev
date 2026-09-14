@@ -515,7 +515,7 @@
     margin-top: var(--space-6);
   }
 
-  footer img {
+  footer Img {
     width: 28px;
     height: 28px;
     transition: transform var(--transition-base);
