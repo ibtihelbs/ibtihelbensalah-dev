@@ -1,32 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { getHeaderData, urlFor } from "../sanity.io";
+import { urlFor } from "../sanity.io";
 import type { HeaderData, NavigationItem } from "../sanity.io";
 import { useMounted } from "../hook/useMounted";
 
-export default function Header() {
+export default function Header({
+  headerData,
+}: {
+  headerData: HeaderData | null;
+}) {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [headerData, setHeaderData] = useState<HeaderData | null>(null);
   const pathname = usePathname();
   const { resolvedTheme, setTheme } = useTheme();
   const mounted = useMounted();
-
-  useEffect(() => {
-    const fetchHeaderData = async () => {
-      try {
-        const data = await getHeaderData();
-        setHeaderData(data);
-      } catch (error) {
-        console.error("Error fetching header data:", error);
-      }
-    };
-    fetchHeaderData();
-  }, []);
 
   const isDark = resolvedTheme === "dark";
 
@@ -141,8 +132,10 @@ export default function Header() {
     }
   };
 
+  // headerData now arrives already-loaded from the server, so this only
+  // guards against a genuinely missing Sanity document, not a fetch delay.
   if (!headerData) {
-    return <header>Loading...</header>;
+    return <header>Header content unavailable</header>;
   }
 
   const { name, logo, navigationItems, themeToggle, icons } = headerData;

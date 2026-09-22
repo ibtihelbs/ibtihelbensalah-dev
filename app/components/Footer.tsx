@@ -1,44 +1,23 @@
 "use client";
 
-import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
-import {
-  getSocialLinks,
-  getSiteSettings,
-  urlFor,
-  type SiteSettings,
-  type SocialLink,
-} from "../sanity.io";
+import { urlFor, type SiteSettings, type SocialLink } from "../sanity.io";
 import { useMounted } from "../hook/useMounted";
 import Image from "next/image";
-export default function Footer() {
-  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const [socialLinks, setSocialLinks] = useState<SocialLink[]>([]);
-  const [loading, setLoading] = useState(true);
+
+export default function Footer({
+  siteSettings,
+  socialLinks,
+}: {
+  siteSettings: SiteSettings | null;
+  socialLinks: SocialLink[];
+}) {
   const mounted = useMounted();
   const { resolvedTheme } = useTheme();
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const [settingsData, socialData] = await Promise.all([
-          getSiteSettings(),
-          getSocialLinks(),
-        ]);
-        setSiteSettings(settingsData);
-        setSocialLinks(socialData);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  if (loading) return null;
-
   const isDark = resolvedTheme === "dark";
+  // Default to "dark" before mount to match server-rendered markup and
+  // avoid a hydration mismatch flash, same behavior as before.
   const theme = mounted ? (isDark ? "dark" : "light") : "dark";
 
   return (

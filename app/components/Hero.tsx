@@ -1,59 +1,28 @@
-"use client";
-
-import { useEffect, useState } from "react";
 import Image from "next/image";
 import { getSiteSettings, urlFor } from "../sanity.io";
 
-interface SiteSettings {
-  heroHeadline: string;
-  heroImage?: any;
-  email?: string;
-  about?: {
-    heading?: string;
-    description?: string;
-    image?: any;
-    features?: Array<{ text: string }>;
-  };
+function parseHeadline(text: string) {
+  if (!text) return null;
+
+  const parts = text.split(/(\*[^*]+\*)/);
+
+  return parts.map((part, index) => {
+    if (part.startsWith("*") && part.endsWith("*")) {
+      const styledText = part.slice(1, -1);
+      return (
+        <span key={index} className="cursive">
+          {styledText}
+        </span>
+      );
+    }
+    return part || null;
+  });
 }
 
-export default function HeroAndAbout() {
-  const [siteSettings, setSiteSettings] = useState<SiteSettings | null>(null);
-  const [loading, setLoading] = useState(true);
+// export const revalidate = 3600; // optional: match the Home page's caching
 
-  useEffect(() => {
-    async function loadSettings() {
-      try {
-        const data = await getSiteSettings();
-        setSiteSettings(data);
-      } catch (error) {
-        console.error("Error fetching site settings:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadSettings();
-  }, []);
-
-  const parseHeadline = (text: string) => {
-    if (!text) return null;
-
-    const parts = text.split(/(\*[^*]+\*)/);
-
-    return parts.map((part, index) => {
-      if (part.startsWith("*") && part.endsWith("*")) {
-        const styledText = part.slice(1, -1);
-        return (
-          <span key={index} className="cursive">
-            {styledText}
-          </span>
-        );
-      }
-      return part || null;
-    });
-  };
-
-  if (loading) return <div>Loading...</div>;
-
+export default async function HeroAndAbout() {
+  const siteSettings = await getSiteSettings();
   const { heroHeadline, heroImage, email, about } = siteSettings ?? {};
 
   return (
@@ -61,7 +30,7 @@ export default function HeroAndAbout() {
       {/* HERO */}
       <section id="hero-section">
         <h1 className="text-center">
-          {heroHeadline ? parseHeadline(heroHeadline) : "Loading..."}
+          {heroHeadline ? parseHeadline(heroHeadline) : null}
         </h1>
 
         <a className="pill cta" href={`mailto:${email ?? ""}`}>
@@ -82,7 +51,7 @@ export default function HeroAndAbout() {
       {/* ABOUT */}
       <section id="about-section">
         <h2 className="text-center">
-          {about?.heading ? parseHeadline(about.heading) : "Loading..."}
+          {about?.heading ? parseHeadline(about.heading) : null}
         </h2>
 
         <h3 className="text-center">

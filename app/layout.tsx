@@ -4,6 +4,7 @@ import "./globals.css";
 import { Providers } from "./components/Providers";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+import { getHeaderData, getSiteSettings, getSocialLinks } from "./sanity.io";
 
 // Configure Domine (Supports multiple weights)
 const domine = Domine({
@@ -42,7 +43,7 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: "Ibtihel Ben Salah" }],
   creator: "Ibtihel Ben Salah",
-  metadataBase: new URL("https://ibtihelbensalah.vercel.app"),
+  metadataBase: new URL("https://ibtihelbensalah-dev.vercel.app"),
   alternates: {
     canonical: "/",
   },
@@ -50,7 +51,7 @@ export const metadata: Metadata = {
     title: "Ibtihel Ben Salah | Frontend Developer & React Developer",
     description:
       "Frontend developer specializing in React, Next.js, JavaScript, and modern responsive web development.",
-    url: "https://ibtihelbensalah.vercel.app",
+    url: "https://ibtihelbensalah-dev.vercel.app",
     siteName: "Ibtihel Ben Salah",
     type: "website",
     locale: "en_US",
@@ -67,11 +68,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [headerData, siteSettings, socialLinks] = await Promise.all([
+    getHeaderData(),
+    getSiteSettings(),
+    getSocialLinks(),
+  ]);
   return (
     <html
       lang="en"
@@ -79,9 +85,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col">
         <Providers>
-          <Header />
+          <Header headerData={headerData} />
           {children}
-          <Footer />
+          <Footer siteSettings={siteSettings} socialLinks={socialLinks} />
         </Providers>
       </body>
     </html>

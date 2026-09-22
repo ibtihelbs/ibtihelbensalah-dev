@@ -1,127 +1,18 @@
-"use client";
+import { getProjects } from "../sanity.io";
+import WorkClient from "./WorkClient";
 
-import { useState, useEffect } from "react";
-import { getProjects, type Project, urlFor } from "../sanity.io";
-import Image from "next/image";
+// Server Component: fetches data at request/build time on the server.
+// This means the HTML sent to the browser (and to search engines, and
+// to a client opening your portfolio link for the first time) already
+// contains the project list — no "Loading projects..." flash, no
+// client-side fetch waterfall, and it's crawlable for SEO.
+//
+// If you want fresh data without a full rebuild, add:
+//   export const revalidate = 3600; // re-fetch at most once an hour
+// Or for always-fresh data on every request:
+//   export const dynamic = "force-dynamic";
+export default async function Work() {
+  const projects = await getProjects();
 
-export default function Work() {
-  const [projects, setProjects] = useState<Project[] | null>(null);
-  const [selectedProject, setSelectedProject] = useState<Project | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function loadProjects() {
-      try {
-        const data = await getProjects();
-        setProjects(data);
-        if (data && data.length > 0) {
-          setSelectedProject(data[0]);
-        }
-      } catch (error) {
-        console.error("Error loading projects:", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadProjects();
-  }, []);
-
-  if (loading) {
-    return (
-      <section id="work-section">
-        <h2 className="text-center">Recent Work</h2>
-        <p className="text-center">Loading projects...</p>
-      </section>
-    );
-  }
-
-  // Optionally derive tags from projects
-  const allTechs = Array.from(
-    new Set(projects?.flatMap((p) => p.technologies ?? []) ?? []),
-  ).slice(0, 5);
-
-  return (
-    <section id="work-section">
-      <h2 className="text-center">recent work</h2>
-
-      {/* Technologies tags */}
-      <div className="tags-big text-center">
-        {allTechs.length > 0 ? (
-          allTechs.map((tech) => <span key={tech}>{tech}</span>)
-        ) : (
-          <>
-            <span>react</span>
-            <span>tailwind</span>
-            <span>framer motion</span>
-            <span>next.js</span>
-            <span>ecommerce</span>
-          </>
-        )}
-      </div>
-
-      <div className="work-grid">
-        {/* Project Preview */}
-        <div id="project-preview">
-          {selectedProject?.thumbnail && (
-            <Image
-              src={urlFor(selectedProject.thumbnail)
-                .width(600)
-                .height(400)
-                .url()}
-              alt={`${selectedProject.title} preview`}
-              width={600}
-              height={400}
-              className="project-thumbnail"
-            />
-          )}
-
-          <div className="space-between">
-            <h3>{selectedProject?.title}</h3>
-            <div className="project-links">
-              {selectedProject?.liveUrl && (
-                <a
-                  href={selectedProject.liveUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  title="Live Demo"
-                >
-                  View live →
-                </a>
-              )}
-            </div>
-          </div>
-
-          <p>{selectedProject?.description}</p>
-
-          {/* Technologies */}
-          <div className="tags">
-            {selectedProject?.technologies?.map((tech) => (
-              <span key={tech}>{tech}</span>
-            ))}
-          </div>
-        </div>
-
-        {/* Projects List */}
-        <ul className="projects-list">
-          {projects?.map((project) => (
-            <li
-              key={project._id}
-              onClick={() => setSelectedProject(project)}
-              className={selectedProject?._id === project._id ? "active" : ""}
-            >
-              <h4>{project.title}</h4>
-              <div className="tags">
-                {project.technologies?.slice(0, 3).map((tech) => (
-                  <span key={tech}>{tech}</span>
-                ))}
-                {project.technologies && project.technologies.length > 3 && (
-                  <span>+{project.technologies.length - 3}</span>
-                )}
-              </div>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </section>
-  );
+  return <WorkClient projects={projects ?? []} />;
 }
